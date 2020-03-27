@@ -16,6 +16,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import uk.co.huntersix.spring.rest.model.Person;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
 
+import java.util.Optional;
+
 @RunWith(SpringRunner.class)
 @WebMvcTest(PersonController.class)
 public class PersonControllerTest {
@@ -28,12 +30,21 @@ public class PersonControllerTest {
 
     @Test
     public void shouldReturnPersonFromService() throws Exception {
-        when(personDataService.findPerson(any(), any())).thenReturn(new Person("Mary", "Smith"));
+        when(personDataService.findPerson(any(), any())).thenReturn(Optional.of(new Person("Mary", "Smith")));
         this.mockMvc.perform(get("/person/smith/mary"))
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("id").exists())
-            .andExpect(jsonPath("firstName").value("Mary"))
-            .andExpect(jsonPath("lastName").value("Smith"));
+            .andExpect(jsonPath("response.id").exists())
+            .andExpect(jsonPath("response.firstName").value("Mary"))
+            .andExpect(jsonPath("response.lastName").value("Smith"));
+    }
+
+    @Test
+    public void shouldReturnPersonNotFoundFromService() throws Exception {
+        when(personDataService.findPerson(any(), any())).thenReturn(Optional.empty());
+        this.mockMvc.perform(get("/person/smith/john"))
+                .andDo(print())
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("message").value("Person not found"));
     }
 }
