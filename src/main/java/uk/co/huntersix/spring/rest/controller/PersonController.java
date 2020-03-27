@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.huntersix.spring.rest.exception.ResourceNotFoundException;
-import uk.co.huntersix.spring.rest.model.Person;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
 
 @RestController
@@ -20,11 +19,17 @@ public class PersonController {
     }
 
     @GetMapping("/person/{lastName}/{firstName}")
-    public ResponseEntity<ServiceResponse> person(@PathVariable(value="lastName") String lastName,
+    public ResponseEntity<ServiceResponse> findPersonByLastAndFirstName(@PathVariable(value="lastName") String lastName,
                                  @PathVariable(value="firstName") String firstName) {
-        return personDataService.findPerson(lastName, firstName)
+        return personDataService.findPersonByLastAndFirstName(lastName, firstName)
                 .map(p -> ResponseEntity.ok(new ServiceResponse("Successfully retrieved", HttpStatus.OK, p)))
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+    }
+
+    @GetMapping("/person/{lastName}")
+    public ResponseEntity<ServiceResponse> findAllPersonsByLastName(@PathVariable(value="lastName") String lastName) {
+        return ResponseEntity.ok(
+                new ServiceResponse("Successfully retrieved", HttpStatus.OK, personDataService.findAllPersonsByLastName(lastName)));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)

@@ -41,4 +41,24 @@ public class HttpRequestTest {
         );
         assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.NOT_FOUND);
     }
+
+    @Test
+    public void shouldReturnAllPersonForLastName() throws Exception {
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.getForEntity(
+                "http://localhost:" + port + "/person/smith",
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody().getResponse()).asList().isNotEmpty().hasSize(1);
+    }
+
+    @Test
+    public void shouldReturnEmptyForLastName() throws Exception {
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.getForEntity(
+                "http://localhost:" + port + "/person/wick",
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody().getResponse()).asList().isEmpty();
+    }
 }

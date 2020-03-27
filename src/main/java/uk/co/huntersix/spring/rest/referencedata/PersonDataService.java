@@ -16,10 +16,16 @@ public class PersonDataService {
         new Person("Collin", "Brown")
     );
 
-    public Optional<Person> findPerson(String lastName, String firstName) {
+    public Optional<Person> findPersonByLastAndFirstName(String lastName, String firstName) {
         return PERSON_DATA.stream()
             .filter(p -> p.getFirstName().equalsIgnoreCase(firstName)
                 && p.getLastName().equalsIgnoreCase(lastName))
             .findFirst();
+    }
+
+    public List<Person> findAllPersonsByLastName(String lastName) {
+        return PERSON_DATA.stream()
+                .filter(p -> p.getLastName().equalsIgnoreCase(lastName))
+                .collect(Collectors.toList());
     }
 }

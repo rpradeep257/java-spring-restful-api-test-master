@@ -30,7 +30,7 @@ public class PersonControllerTest {
 
     @Test
     public void shouldReturnPersonFromService() throws Exception {
-        when(personDataService.findPerson(any(), any())).thenReturn(Optional.of(new Person("Mary", "Smith")));
+        when(personDataService.findPersonByLastAndFirstName(any(), any())).thenReturn(Optional.of(new Person("Mary", "Smith")));
         this.mockMvc.perform(get("/person/smith/mary"))
             .andDo(print())
             .andExpect(status().isOk())
@@ -41,7 +41,7 @@ public class PersonControllerTest {
 
     @Test
     public void shouldReturnPersonNotFoundFromService() throws Exception {
-        when(personDataService.findPerson(any(), any())).thenReturn(Optional.empty());
+        when(personDataService.findPersonByLastAndFirstName(any(), any())).thenReturn(Optional.empty());
         this.mockMvc.perform(get("/person/smith/john"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
