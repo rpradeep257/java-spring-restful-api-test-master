@@ -8,4 +8,5 @@ public class ServiceUtils {
     public static final String NO_MATCHING_RECORDS = "No matching records";
     public static final String FIRST_LAST_NAME_REQ = "First name and last name is required";
     public static final String DUPLICATE_PERSON = "Person already exists";
+    public static final String SUCCESSFULLY_UPDATED = "Successfully updated";
 }

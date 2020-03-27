@@ -4,8 +4,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static uk.co.huntersix.spring.rest.utils.ServiceUtils.DUPLICATE_PERSON;
@@ -114,4 +114,27 @@ public class PersonControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is(DUPLICATE_PERSON)));
     }
+
+    @Test
+    public void shouldPatchFirstNameOfPerson() throws Exception {
+        when(personDataService.findPersonById(Long.valueOf(4))).thenReturn(Optional.of(new Person("john", "smith")));
+        this.mockMvc.perform(patch("/person/4")
+                .content("{\"firstName\":\"ray\"}")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", is("Successfully updated")));
+    }
+
+    @Test
+    public void shouldFailToPatchFirstNameOfPerson() throws Exception {
+        when(personDataService.findPersonById(Long.valueOf(4))).thenReturn(Optional.of(new Person("john", "smith")));
+        this.mockMvc.perform(patch("/person/4")
+                .content("")
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+
 }

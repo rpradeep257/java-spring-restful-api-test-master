@@ -123,4 +123,36 @@ public class HttpRequestTest {
         assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
         assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.FIRST_LAST_NAME_REQ);
     }
+
+    @Test
+    public void shouldPatchFirstNameOfPerson() throws Exception {
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", "application/json");
+
+        HttpEntity<String> request1 = new HttpEntity<>("{\"firstName\":\"jim\", \"lastName\":\"collin\"}", headers);
+        HttpEntity<String> request2 = new HttpEntity<>("{\"firstName\":\"ray\"}", headers);
+
+        // create a person
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person", request1,
+                ServiceResponse.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+        Long id = Long.valueOf(responseEntity.getBody().getResponse().toString());
+
+        // patch a person
+        responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person/" + id + "?_method=patch", request2,
+                ServiceResponse.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+
+        // check if patch applied
+        responseEntity = this.restTemplate.getForEntity(
+                "http://localhost:" + port + "/person/collin",
+                ServiceResponse.class);
+
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
+        assertThat(responseEntity.getBody().getResponse()).toString().contains("ray");
+    }
 }

@@ -50,4 +50,10 @@ public class PersonDataService {
 
         return newPerson.getId();
     }
+
+    public Optional<Person> findPersonById(Long id) {
+        return PERSON_DATA.stream()
+                .filter(p -> p.getId().equals(id))
+                .findFirst();
+    }
 }

@@ -24,12 +24,12 @@ public class PersonController {
     public ResponseEntity<ServiceResponse> findPersonByLastAndFirstName(@PathVariable(value="lastName") String lastName,
                                  @PathVariable(value="firstName") String firstName) {
         return personDataService.findPersonByLastAndFirstName(lastName, firstName)
-                .map(p -> ResponseEntity.ok(new ServiceResponse("ServiceUtils.SUCCESSFULLY_RETRIEVED", HttpStatus.OK, p)))
+                .map(p -> ResponseEntity.ok(new ServiceResponse(ServiceUtils.SUCCESSFULLY_RETRIEVED, HttpStatus.OK, p)))
                 .orElseThrow(() -> new ResourceNotFoundException(ServiceUtils.PERSON_NOT_FOUND));
     }
 
     @GetMapping("/person/{lastName}")
-    public ResponseEntity<ServiceResponse> findAllPersonsByLastName(@PathVariable(value="lastName") String lastName) {
+    public ResponseEntity<ServiceResponse> findAllPersonsByLastName(@PathVariable("lastName") String lastName) {
 
         List<Person> personsByLastName = personDataService.findAllPersonsByLastName(lastName);
 
@@ -48,6 +48,22 @@ public class PersonController {
         Long personId = personDataService.create(person);
         return new ResponseEntity(new ServiceResponse(ServiceUtils.SUCCESSFULLY_CREATED, HttpStatus.CREATED, personId),
                 HttpStatus.CREATED);
+    }
+
+    // Note: this is simple and quick patch implementation. could use a library like json-patch
+    @PatchMapping("/person/{id}")
+    public ResponseEntity<ServiceResponse> updatePerson(@PathVariable("id") Long id, @RequestBody Person person) {
+        Person personToPatch = personDataService.findPersonById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+
+        if (!person.getFirstName().isEmpty()) {
+            personToPatch.setFirstName(person.getFirstName());
+        }
+
+        //check other properties to patch
+
+        return new ResponseEntity(new ServiceResponse(ServiceUtils.SUCCESSFULLY_UPDATED,
+                HttpStatus.OK), HttpStatus.OK);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
