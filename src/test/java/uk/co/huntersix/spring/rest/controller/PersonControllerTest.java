@@ -1,5 +1,7 @@
 package uk.co.huntersix.spring.rest.controller;
 
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -15,7 +17,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import uk.co.huntersix.spring.rest.model.Person;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
+import uk.co.huntersix.spring.rest.utils.ServiceUtils;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @RunWith(SpringRunner.class)
@@ -45,6 +49,31 @@ public class PersonControllerTest {
         this.mockMvc.perform(get("/person/smith/john"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("message").value("Person not found"));
+                .andExpect(jsonPath("message").value(ServiceUtils.PERSON_NOT_FOUND));
+    }
+
+    @Test
+    public void shouldReturnAllPersonForLastNameFromService() throws Exception {
+        when(personDataService.findAllPersonsByLastName(any())).thenReturn(Arrays.asList(new Person("john", "wick"),
+                new Person("jason", "wick")));
+        this.mockMvc.perform(get("/person/wick"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("message").value(ServiceUtils.SUCCESSFULLY_RETRIEVED))
+                .andExpect(jsonPath("$.response", hasSize(2)))
+                .andExpect(jsonPath("$.response.[0].firstName", is("john")))
+                .andExpect(jsonPath("$.response.[0].lastName", is("wick")))
+                .andExpect(jsonPath("$.response.[1].firstName", is("jason")))
+                .andExpect(jsonPath("$.response.[1].lastName", is("wick")));
+    }
+
+    @Test
+    public void shouldReturnEmptyListOfPersonByLastNameFromService() throws Exception {
+        when(personDataService.findAllPersonsByLastName(any())).thenReturn(Arrays.asList());
+        this.mockMvc.perform(get("/person/wick"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.response", hasSize(0)))
+                .andExpect(jsonPath("message").value(ServiceUtils.SUCCESSFULLY_RETRIEVED));
     }
 }

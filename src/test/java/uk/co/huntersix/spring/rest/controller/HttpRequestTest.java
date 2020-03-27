@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
+import uk.co.huntersix.spring.rest.utils.ServiceUtils;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -60,5 +61,6 @@ public class HttpRequestTest {
         );
         assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
         assertThat(responseEntity.getBody().getResponse()).asList().isEmpty();
+        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.SUCCESSFULLY_RETRIEVED);
     }
 }

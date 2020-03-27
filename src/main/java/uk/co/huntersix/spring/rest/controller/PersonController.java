@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.huntersix.spring.rest.exception.ResourceNotFoundException;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
+import uk.co.huntersix.spring.rest.utils.ServiceUtils;
 
 @RestController
 public class PersonController {
@@ -22,19 +23,20 @@ public class PersonController {
     public ResponseEntity<ServiceResponse> findPersonByLastAndFirstName(@PathVariable(value="lastName") String lastName,
                                  @PathVariable(value="firstName") String firstName) {
         return personDataService.findPersonByLastAndFirstName(lastName, firstName)
-                .map(p -> ResponseEntity.ok(new ServiceResponse("Successfully retrieved", HttpStatus.OK, p)))
-                .orElseThrow(() -> new ResourceNotFoundException("Person not found"));
+                .map(p -> ResponseEntity.ok(new ServiceResponse("ServiceUtils.SUCCESSFULLY_RETRIEVED", HttpStatus.OK, p)))
+                .orElseThrow(() -> new ResourceNotFoundException(ServiceUtils.PERSON_NOT_FOUND));
     }
 
     @GetMapping("/person/{lastName}")
     public ResponseEntity<ServiceResponse> findAllPersonsByLastName(@PathVariable(value="lastName") String lastName) {
         return ResponseEntity.ok(
-                new ServiceResponse("Successfully retrieved", HttpStatus.OK, personDataService.findAllPersonsByLastName(lastName)));
+                new ServiceResponse(ServiceUtils.SUCCESSFULLY_RETRIEVED, HttpStatus.OK,
+                        personDataService.findAllPersonsByLastName(lastName)));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ServiceResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
-        ServiceResponse serviceResponse = new ServiceResponse("Person not found", HttpStatus.NOT_FOUND);
+        ServiceResponse serviceResponse = new ServiceResponse(exception.getMessage(), HttpStatus.NOT_FOUND);
         return new ResponseEntity<ServiceResponse>(serviceResponse, HttpStatus.NOT_FOUND);
     }
 }
