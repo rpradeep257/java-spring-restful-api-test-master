@@ -1,5 +1,6 @@
 package uk.co.huntersix.spring.rest.model;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Person {
@@ -41,5 +42,19 @@ public class Person {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Person person = (Person) o;
+        return Objects.equals(getFirstName(), person.getFirstName()) &&
+                Objects.equals(getLastName(), person.getLastName());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getFirstName(), getLastName());
     }
 }

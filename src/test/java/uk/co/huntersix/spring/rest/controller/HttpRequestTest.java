@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -61,6 +63,64 @@ public class HttpRequestTest {
         );
         assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
         assertThat(responseEntity.getBody().getResponse()).asList().isEmpty();
-        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.SUCCESSFULLY_RETRIEVED);
+        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.NO_MATCHING_RECORDS);
+    }
+
+    @Test
+    public void shouldCreateNewPerson() throws Exception {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", "application/json");
+
+        HttpEntity<String> request = new HttpEntity<>("{\"firstName\":\"jack\", \"lastName\":\"reacher\"}", headers);
+
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person",
+                request,
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.SUCCESSFULLY_CREATED);
+    }
+
+    @Test
+    public void shouldFailCreatingDuplicatePerson() throws Exception {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", "application/json");
+
+        HttpEntity<String> request = new HttpEntity<>("{\"firstName\":\"jim\", \"lastName\":\"reacher\"}", headers);
+
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person",
+                request,
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.CREATED);
+
+        responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person",
+                request,
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.DUPLICATE_PERSON);
+    }
+
+    @Test
+    public void shouldFailCreatingInvalidPerson() throws Exception {
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-type", "application/json");
+
+        HttpEntity<String> request = new HttpEntity<>("{\"firstName\":\"\", \"lastName\":\"reacher\"}", headers);
+
+        ResponseEntity<ServiceResponse> responseEntity = this.restTemplate.postForEntity(
+                "http://localhost:" + port + "/person",
+                request,
+                ServiceResponse.class
+        );
+        assertThat(responseEntity.getStatusCode()).isEqualByComparingTo(HttpStatus.BAD_REQUEST);
+        assertThat(responseEntity.getBody().getMessage()).contains(ServiceUtils.FIRST_LAST_NAME_REQ);
     }
 }

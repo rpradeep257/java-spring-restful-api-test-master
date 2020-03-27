@@ -1,7 +1,9 @@
 package uk.co.huntersix.spring.rest.controller;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.springframework.http.HttpStatus;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ServiceResponse {
 
     private String message;

@@ -3,13 +3,14 @@ package uk.co.huntersix.spring.rest.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import uk.co.huntersix.spring.rest.exception.ResourceNotFoundException;
+import uk.co.huntersix.spring.rest.exception.ServiceException;
+import uk.co.huntersix.spring.rest.model.Person;
 import uk.co.huntersix.spring.rest.referencedata.PersonDataService;
 import uk.co.huntersix.spring.rest.utils.ServiceUtils;
+
+import java.util.List;
 
 @RestController
 public class PersonController {
@@ -29,9 +30,24 @@ public class PersonController {
 
     @GetMapping("/person/{lastName}")
     public ResponseEntity<ServiceResponse> findAllPersonsByLastName(@PathVariable(value="lastName") String lastName) {
-        return ResponseEntity.ok(
-                new ServiceResponse(ServiceUtils.SUCCESSFULLY_RETRIEVED, HttpStatus.OK,
-                        personDataService.findAllPersonsByLastName(lastName)));
+
+        List<Person> personsByLastName = personDataService.findAllPersonsByLastName(lastName);
+
+        // Note: ideally should be using pagination (count, start and pageSize)
+        if (personsByLastName.isEmpty()) {
+            return ResponseEntity.ok(
+                    new ServiceResponse(ServiceUtils.NO_MATCHING_RECORDS, HttpStatus.OK, personsByLastName));
+        } else {
+            return ResponseEntity.ok(
+                    new ServiceResponse(ServiceUtils.SUCCESSFULLY_RETRIEVED, HttpStatus.OK, personsByLastName));
+        }
+    }
+
+    @PostMapping("/person")
+    public ResponseEntity<ServiceResponse> createPerson(@RequestBody Person person) {
+        Long personId = personDataService.create(person);
+        return new ResponseEntity(new ServiceResponse(ServiceUtils.SUCCESSFULLY_CREATED, HttpStatus.CREATED, personId),
+                HttpStatus.CREATED);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -39,4 +55,11 @@ public class PersonController {
         ServiceResponse serviceResponse = new ServiceResponse(exception.getMessage(), HttpStatus.NOT_FOUND);
         return new ResponseEntity<ServiceResponse>(serviceResponse, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<ServiceResponse> handleServiceException(ServiceException exception) {
+        ServiceResponse serviceResponse = new ServiceResponse(exception.getMessage(), HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<ServiceResponse>(serviceResponse, HttpStatus.BAD_REQUEST);
+    }
+
 }
